@@ -1,0 +1,87 @@
+import React, { useEffect } from 'react'
+import { List } from '@material-ui/core'
+import {
+  ClearButton,
+  Container,
+  ListContainer,
+  ListEmpty,
+  ListReminderItem,
+} from './components'
+import { useDispatch, useSelector } from 'react-redux'
+import { useAlert } from 'react-alert'
+import {
+  deleteDeleteReminders,
+  getDeleteReminders,
+} from '../../redux/Actions/reminderAction'
+
+const DeletedReminders = () => {
+  const dispatch = useDispatch()
+  const alert = useAlert()
+
+  const { deletedReminderList } = useSelector((state) => state.getReminders)
+  const { error, message } = useSelector(
+    (state) => state.addDeleteUpdateReminder
+  )
+
+  const clearList = async () => {
+    await dispatch(deleteDeleteReminders())
+  }
+
+  useEffect(() => {
+    if (error) {
+      alert.error(error)
+      dispatch({ type: 'clearErrors' })
+    }
+
+    if (message) {
+      alert.success(message)
+      dispatch({ type: 'clearMessage' })
+    }
+
+    dispatch(getDeleteReminders())
+  }, [dispatch, error, message, alert])
+
+  return (
+    <Container>
+      <ListContainer title='Could not remember these reminders, then you deleted them..'>
+        {deletedReminderList && deletedReminderList.length > 0 ? (
+          <>
+            <ClearButton title='Clear all' onClick={() => clearList()} />
+            <List>
+              {deletedReminderList.map((event, index) => {
+                const {
+                  completedAt,
+                  createdAt,
+                  deletedAt,
+                  eventDate,
+                  owner,
+                  showReminder,
+                  subTitle,
+                  title,
+                } = event
+
+                return (
+                  <ListReminderItem
+                    key={index}
+                    completedAt={completedAt}
+                    createdAt={createdAt}
+                    deletedAt={deletedAt}
+                    eventDate={eventDate}
+                    owner={owner}
+                    showReminder={showReminder}
+                    subTitle={subTitle}
+                    title={title}
+                  />
+                )
+              })}
+            </List>
+          </>
+        ) : (
+          <ListEmpty title="Gud! No reminder's deleted.." />
+        )}
+      </ListContainer>
+    </Container>
+  )
+}
+
+export default DeletedReminders
